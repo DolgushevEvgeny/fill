@@ -2,71 +2,60 @@
 //
 
 #include "stdafx.h"
-#include <malloc.h>
 #include <string>
 #include <fstream>
+#include <iostream>
+#include <vector>
 
 using namespace std;
 
-int n_size = 0, m_size = 0;
-
-void Dispose_Memory(char **matrix)
+void ReadMap(const string &fileName, vector<vector<char>> &map)
 {
-	for (int i = 0; i < 3; i++)
-	{
-		delete[] matrix[i];
-	}
-	delete[] matrix;
-}
+	ifstream inputFile;
+	inputFile.open(fileName, ifstream::in);
 
-char** Read_Map(char *file_name)
-{
-	FILE *file_input = fopen(file_name, "r");
-	if (file_input == NULL)
+	if (!(inputFile.good()))
 	{
-		printf("Error: cannot load input file\n");
-		system("pause");
 		exit(1);
 	}
-	
-	char **map = new char*[100];
-	for (int i = 0; i < 100; i++)
+
+	for (int i = 0; i < 100; ++i)
 	{
-		map[i] = new char[100];
-		for (int j = 0; j < 100; j++)
+		vector<char> line;
+		for (int j = 0; j < 100; ++j)
 		{
 			char symbol;
-			if (!feof(file_input))
+			if (!inputFile.eof())
 			{
-				symbol = fgetc(file_input);
+				inputFile.get(symbol);
 				if (symbol != '\n')
 				{
-					map[i][j] = symbol;
-					m_size++;
+					line.push_back(symbol);
 				}
 				else
+				{
 					break;
+				}
 			}
 		}
-		n_size++;
-		if (feof(file_input))
+		map.push_back(line);
+		if (inputFile.eof())
+		{
 			break;
+		}
 	}
-	m_size = (m_size - 1) / n_size;
-	return map;
-	fclose(file_input);
 }
 
-void Paint_Map(int k, int p, char** map)
+void PaintMap(const int &k, const int &p, vector<vector<char>> &map)
 {
-	if ((0 < k < n_size) && (0 < p < m_size))
+	if ((0 < k && k < map.size()) && (0 < p && p < map[0].size()))
 	{
-		if (k + 1 <= n_size)
+		if (k + 1 <= map.size())
 		{
 			if (map[k + 1][p] == ' ')
 			{
 				map[k+1][p] = '.';
-				Paint_Map(k + 1, p, map);
+				PaintMap(k + 1, p, map);
 			}
 		}
 		if (k - 1 >= 0)
@@ -74,15 +63,15 @@ void Paint_Map(int k, int p, char** map)
 			if (map[k - 1][p] == ' ')
 			{
 				map[k-1][p] = '.';
-				Paint_Map(k - 1, p, map);
+				PaintMap(k - 1, p, map);
 			}
 		}
-		if (p + 1 <= m_size)
+		if (p + 1 <= map[0].size())
 		{
 			if (map[k][p + 1] == ' ')
 			{
 				map[k][p+1] = '.';
-				Paint_Map(k, p + 1, map);
+				PaintMap(k, p + 1, map);
 			}
 		}
 		if (p - 1 >= 0)
@@ -90,66 +79,76 @@ void Paint_Map(int k, int p, char** map)
 			if (map[k][p - 1] == ' ')
 			{
 				map[k][p-1] = '.';
-				Paint_Map(k, p - 1, map);
+				PaintMap(k, p - 1, map);
 			}
 		}
 	}
 }
 
-void Save_Map(char** map, char *file_name)
+void SaveMap(const vector<vector<char>> &map, const string &fileName)
 {
-	FILE *file_output = fopen(file_name, "w");
-	if (file_output == NULL)
+	ofstream outputFile;
+	outputFile.open(fileName, ofstream::out);
+
+	if (!(outputFile.good()))
 	{
-		printf("Error: cannot create output file\n");
-		system("pause");
 		exit(1);
 	}
 
-	for (int i = 0; i < n_size; i++)
+	for (int i = 0; i < map.size(); i++)
 	{
-		for (int j = 0; j < m_size; j++)
+		for (int j = 0; j < map[0].size(); j++)
 		{
-			if (i != n_size && j != m_size)
-				fprintf(file_output, "%c", map[i][j]);
+			if (i != map.size() && j != map[0].size())
+			{
+				outputFile << map[i][j];
+			}
 		}
-		if (i < n_size - 1)
-			fprintf(file_output, "%s", "\n");
+		if (i < map.size() - 1)
+		{
+			outputFile << endl;
+		}
 	}
-	fclose(file_output);
-	Dispose_Memory(map);
 }
 
-void Wave_search(char **map)
+void WaveSearch(vector<vector<char>> &map)
 {
-	for (int i = 0; i < n_size; i++)
+	for (unsigned int i = 0; i < map.size(); ++i)
 	{
-		for (int j = 0; j < m_size; j++)
+		for (unsigned int j = 0; j < map[0].size(); ++j)
 		{
 			if (map[i][j] == 'O')
-				Paint_Map(i, j, map);
+			{
+				PaintMap(i, j, map);
+			}
 		}
 	}
 }
 
-void Print_Map(char **map)
+void PrintMap(const vector<vector<char>> &map)
 {
-	for (int i = 0; i < n_size; i++)
+	for (int i = 0; i < map.size(); i++)
 	{
-		for (int j = 0; j < m_size; j++)
-			printf("%c", map[i][j]);
-
-		printf("%s", "\n");
+		for (int j = 0; j < map[0].size(); j++)
+		{
+			cout << map[i][j];
+		}
+		cout << endl;
 	}
 }
 int main(int argc, char* argv[])
 {
-	char *Name_input = argv[1];
-	char *Name_output = argv[2];
-	char **Map = Read_Map(Name_input);
-	//Print_Map(Map);
-	Wave_search(Map);
-	Save_Map(Map,Name_output);
+	string inputFileName = argv[1];
+	string outputFileName = argv[2];
+
+	vector<vector<char>> map;
+	ReadMap(inputFileName, map);
+	WaveSearch(map);
+	if (outputFileName.size() == 0)
+	{
+		PrintMap(map);
+	}
+	SaveMap(map, outputFileName);
 	return 0;
 }
 
