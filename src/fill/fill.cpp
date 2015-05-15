@@ -48,9 +48,9 @@ void ReadMap(const string &fileName, vector<vector<char>> &map)
 
 void PaintMap(const int &k, const int &p, vector<vector<char>> &map)
 {
-	if ((0 < k && k < map.size()) && (0 < p && p < map[0].size()))
+	if ((0 <= k && k < map.size()) && (0 <= p && p < map[0].size()))
 	{
-		if (k + 1 <= map.size())
+		if (k + 1 <= map.size() - 1)
 		{
 			if (map[k + 1][p] == ' ')
 			{
@@ -66,7 +66,7 @@ void PaintMap(const int &k, const int &p, vector<vector<char>> &map)
 				PaintMap(k - 1, p, map);
 			}
 		}
-		if (p + 1 <= map[0].size())
+		if (p + 1 <= map[0].size() - 1)
 		{
 			if (map[k][p + 1] == ' ')
 			{
@@ -136,6 +136,7 @@ void PrintMap(const vector<vector<char>> &map)
 		cout << endl;
 	}
 }
+
 int main(int argc, char* argv[])
 {
 	string inputFileName = argv[1];
